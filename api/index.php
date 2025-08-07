@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.25.0/docxtemplater.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
 
 
 
@@ -47,7 +47,7 @@
       "mr-IN": "Marathi"
     }
 
-    document.addEventListener("DOMContentLoaded", function () {
+    document.addEventListener("DOMContentLoaded", function() {
       const fromText = document.querySelector(".from-text");
       const toText = document.querySelector(".to-text");
       const exchangeIcon = document.querySelector(".exchange");
@@ -98,73 +98,75 @@
           });
       });
 
-fileInput.addEventListener("change", () => {
-  const file = fileInput.files[0];
+      fileInput.addEventListener("change", () => {
+        const file = fileInput.files[0];
 
-  if (file) {
-    if (file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
-      const reader = new FileReader();
+        if (file) {
+          if (file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+            const reader = new FileReader();
 
-      reader.onload = function (e) {
-        const content = e.target.result;
+            reader.onload = function(e) {
+              const content = e.target.result;
 
-        JSZip.loadAsync(content).then(function (zip) {
-          zip.file("word/document.xml").async("string").then(function (docContent) {
-            const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(docContent, "text/xml");
-            const text = xmlDoc.getElementsByTagName("w:t");
-            let extractedText = "";
+              JSZip.loadAsync(content).then(function(zip) {
+                zip.file("word/document.xml").async("string").then(function(docContent) {
+                  const parser = new DOMParser();
+                  const xmlDoc = parser.parseFromString(docContent, "text/xml");
+                  const text = xmlDoc.getElementsByTagName("w:t");
+                  let extractedText = "";
 
-            for (let i = 0; i < text.length; i++) {
-              extractedText += text[i].textContent + " ";
-            }
+                  for (let i = 0; i < text.length; i++) {
+                    extractedText += text[i].textContent + " ";
+                  }
 
-            fromText.value = extractedText;
-          });
-        });
-      };
-
-      reader.readAsArrayBuffer(file);
-    } else if (file.type === "application/pdf") {
-      const reader = new FileReader();
-
-      reader.onload = function (e) {
-        const content = e.target.result;
-
-        // Use pdf.js to extract text from PDF file
-        const loadingTask = pdfjsLib.getDocument({ data: content });
-        loadingTask.promise.then(function (pdf) {
-          const maxPages = pdf.numPages;
-          let extractedText = "";
-
-          for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
-            pdf.getPage(pageNum).then(function (page) {
-              return page.getTextContent();
-            }).then(function (textContent) {
-              textContent.items.forEach(function (textItem) {
-                extractedText += textItem.str + " ";
+                  fromText.value = extractedText;
+                });
               });
+            };
 
-              fromText.value = extractedText;
-            });
+            reader.readAsArrayBuffer(file);
+          } else if (file.type === "application/pdf") {
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+              const content = e.target.result;
+
+              // Use pdf.js to extract text from PDF file
+              const loadingTask = pdfjsLib.getDocument({
+                data: content
+              });
+              loadingTask.promise.then(function(pdf) {
+                const maxPages = pdf.numPages;
+                let extractedText = "";
+
+                for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
+                  pdf.getPage(pageNum).then(function(page) {
+                    return page.getTextContent();
+                  }).then(function(textContent) {
+                    textContent.items.forEach(function(textItem) {
+                      extractedText += textItem.str + " ";
+                    });
+
+                    fromText.value = extractedText;
+                  });
+                }
+              });
+            };
+
+            reader.readAsArrayBuffer(file);
+          } else {
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+              fromText.value = e.target.result;
+            };
+
+            reader.readAsText(file);
           }
-        });
-      };
+        }
+      });
 
-      reader.readAsArrayBuffer(file);
-    } else {
-      const reader = new FileReader();
-
-      reader.onload = function (e) {
-        fromText.value = e.target.result;
-      };
-
-      reader.readAsText(file);
-    }
-  }
-});
-
-});
+    });
   </script>
 </body>
 
